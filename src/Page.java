@@ -49,6 +49,8 @@ public class Page {
 	}
 	public void setRevisions(List<Revision> revisions) {
 		this.revisions = revisions;
+		for(Revision r : this.revisions)
+			r.setPage(this);
 	}
 	
 	

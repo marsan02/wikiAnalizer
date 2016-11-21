@@ -12,8 +12,16 @@ public class Revision {
 	private Contributor contributor;
 	private String comment;
 	private Text text;
+	private Page page;
 	
 	
+	
+	public Page getPage() {
+		return page;
+	}
+	public void setPage(Page page) {
+		this.page = page;
+	}
 	@XmlElement
 	public int getId() {
 		return id;
