@@ -35,7 +35,7 @@ public class Revision {
 	}
 	public void setTimestamp(String timestamp) {
 		this.timestamp = timestamp;
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-mm-dd'T'HH:mm:ss'Z'");
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 		try {
 			setTime(format.parse(timestamp));
 		} catch (ParseException e) {

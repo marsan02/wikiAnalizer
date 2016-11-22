@@ -1,11 +1,16 @@
 import java.io.File;
+import java.time.LocalDate;
 import java.time.Month;
 import java.time.Year;
+import java.time.YearMonth;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.TreeMap;
 import java.util.function.Predicate;
 
 import javax.xml.bind.JAXBContext;
@@ -23,12 +28,11 @@ public class Main {
 				Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
 				Wiki wiki = (Wiki) jaxbUnmarshaller.unmarshal(file);
 				List<Revision> revisions = sortRevisionsByDate(getAllRevisions(wiki));
-				HashMap<Integer,HashMap<Integer,List<Revision> > > map = groupRevisionsByMonth(revisions);
-				for(int y = revisions.get(0).getTime().getYear(); y<= revisions.get(revisions.size()-1).getTime().getYear(); y++){
-					for(int i = 1; i<=12;i++)
-						
-						System.out.println(new DateFormatSymbols().getMonths()[i-1] + " " + y + " : " + map.get(y).get(i).size());
-				}
+				TreeMap<YearMonth,List<Revision>> map = groupRevisionsByMonth(revisions);
+				map.forEach((k,v) ->{
+					
+					System.out.format("%11s%6d%8d \n",k.getMonth() , k.getYear(),v.size());
+				});
 			  } catch (JAXBException e) {
 				e.printStackTrace();
 			  }
@@ -66,27 +70,28 @@ public class Main {
 		return revisions;
 	}
 	
-	public static HashMap<Integer,HashMap<Integer,List<Revision>>> groupRevisionsByMonth(List<Revision> revisions){
-		HashMap<Integer,HashMap<Integer,List<Revision>>> map = new HashMap<Integer,HashMap<Integer,List<Revision>>>();
-		for(int y = revisions.get(0).getTime().getYear(); y<= revisions.get(revisions.size()-1).getTime().getYear(); y++){
-			map.put(y,new HashMap<Integer,List<Revision>>());
-			for(int i = 1; i<=12;i++)
-				map.get(y).put(i, new LinkedList<Revision>());
+	public static TreeMap<YearMonth,List<Revision>> groupRevisionsByMonth(List<Revision> revisions){
+		TreeMap<YearMonth,List<Revision> > map = new TreeMap<YearMonth,List<Revision>>();
+		List<Revision> monthlyRevisions;
+		Date date = new Date();
+		LocalDate localDate;
+		YearMonth yearMonth;
+		for(Revision r : revisions){
+			date = r.getTime();
+			localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+			yearMonth = YearMonth.of(localDate.getYear(),localDate.getMonthValue());
+			if(map.containsKey(yearMonth)){
+				monthlyRevisions = map.get(yearMonth);
+				monthlyRevisions.add(r);
+				map.put(yearMonth, monthlyRevisions);
+			}
+			else{
+				map.put(yearMonth, new LinkedList<Revision>());
+			}
 			
 		}
 		
-		for(Revision r : revisions){
-			int year = r.getTime().getYear();
-			int month = r.getTime().getMonth();
-			HashMap<Integer, List<Revision>> m = map.get(year);
-			List<Revision> l = m.get(month);
-			l.add(r);
-			m.put(month, l);
-			map.put(year,m);	
-		}
-		
 		return map;
-		
 		
 	}
 }
