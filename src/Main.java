@@ -1,5 +1,6 @@
 import java.io.File;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.Month;
 import java.time.Year;
 import java.time.YearMonth;
@@ -16,6 +17,7 @@ import java.util.function.Predicate;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+
 import java.text.DateFormatSymbols;
 
 public class Main {
@@ -27,71 +29,37 @@ public class Main {
 				JAXBContext jaxbContext = JAXBContext.newInstance(Wiki.class);
 				Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
 				Wiki wiki = (Wiki) jaxbUnmarshaller.unmarshal(file);
-				List<Revision> revisions = sortRevisionsByDate(getAllRevisions(wiki));
-				TreeMap<YearMonth,List<Revision>> map = groupRevisionsByMonth(revisions);
-				map.forEach((k,v) ->{
-					
-					System.out.format("%11s%6d%8d \n",k.getMonth() , k.getYear(),v.size());
-				});
+				showRevisionsByHour(wiki);
 			  } catch (JAXBException e) {
 				e.printStackTrace();
 			  }
+		 
+		 
+		
 
 	}
 	
-	public static List<Page> getPages(Wiki wiki){
-		List<Page> pages = wiki.getPages();
-		Predicate<Page> predicate = p-> p.getNs() != 0;
-		pages.removeIf(predicate);
-		return pages;
-	}
-	
-	public static List<Revision> getAllRevisions(Wiki wiki){
-		List<Revision> revisions = new LinkedList<Revision>();
-		for(Page p : wiki.getPages())
-			revisions.addAll(p.getRevisions());
-		
-		return revisions;
-		
-	}
-	
-	public static List<Revision> sortRevisionsByDate(List<Revision> revisions){
-		
-		Collections.sort(revisions, new Comparator<Revision>(){
 
-			@Override
-			public int compare(Revision r1, Revision r2) {
-				return (r1.getTime().after(r2.getTime())) ? 1 : 0;
-			}
+	 public static void showRevisionsByHour(Wiki wiki){
+		 TreeMap<LocalTime,List<Revision>> map = wiki.groupRevisionsByHour();
+			map.forEach((k,v) ->{
 				
-				
-		});
-		
-		return revisions;
-	}
+				System.out.format(k.toString() + " - " + k.plusMinutes(59) + "   " + v.size() + "\n");
+			}); 
+	 }
 	
-	public static TreeMap<YearMonth,List<Revision>> groupRevisionsByMonth(List<Revision> revisions){
-		TreeMap<YearMonth,List<Revision> > map = new TreeMap<YearMonth,List<Revision>>();
-		List<Revision> monthlyRevisions;
-		Date date = new Date();
-		LocalDate localDate;
-		YearMonth yearMonth;
-		for(Revision r : revisions){
-			date = r.getTime();
-			localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-			yearMonth = YearMonth.of(localDate.getYear(),localDate.getMonthValue());
-			if(map.containsKey(yearMonth)){
-				monthlyRevisions = map.get(yearMonth);
-				monthlyRevisions.add(r);
-				map.put(yearMonth, monthlyRevisions);
-			}
-			else{
-				map.put(yearMonth, new LinkedList<Revision>());
-			}
-			
-		}
+	public static void showRevisionsByMonth(Wiki wiki){
 		
-		return map;
+		 TreeMap<YearMonth,List<Revision>> map = wiki.groupRevisionsByMonth();
+			map.forEach((k,v) ->{
+				
+				System.out.format("%10s%5d%7d\n", k.getMonth(),k.getYear(),v.size());
+			}); 
+		
+		
 		
 	}
+
+	
+
 }
