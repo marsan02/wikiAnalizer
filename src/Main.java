@@ -1,24 +1,12 @@
 import java.io.File;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.Month;
-import java.time.Year;
 import java.time.YearMonth;
-import java.time.ZoneId;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.TreeMap;
-import java.util.function.Predicate;
-
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
-import java.text.DateFormatSymbols;
 
 public class Main {
 	public static void main(String [] args)
@@ -29,7 +17,7 @@ public class Main {
 				JAXBContext jaxbContext = JAXBContext.newInstance(Wiki.class);
 				Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
 				Wiki wiki = (Wiki) jaxbUnmarshaller.unmarshal(file);
-				showRevisionsByHour(wiki);
+				showEditors(wiki);
 			  } catch (JAXBException e) {
 				e.printStackTrace();
 			  }
@@ -54,12 +42,19 @@ public class Main {
 			map.forEach((k,v) ->{
 				
 				System.out.format("%10s%5d%7d\n", k.getMonth(),k.getYear(),v.size());
-			}); 
-		
-		
-		
+			}); 	
 	}
 
-	
+	public static void showEditors(Wiki wiki){
+		float total = wiki.getAllRevisions().size();
+		 TreeMap<Contributor,List<Revision>> editors = wiki.getEditors();
+			editors.forEach((k,v) ->{
+				float porcentage = v.size()/total * 100;
+				if(total>2){
+				System.out.format("%35s %5f \n", k.getUsername(),porcentage);
+				}
+			}); 	
+	}
+
 
 }

@@ -1,7 +1,7 @@
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 
-public class Contributor {
+public class Contributor implements Comparable<Contributor>{
 	private String username;
 	private int id;
 	
@@ -19,6 +19,10 @@ public class Contributor {
 	}
 	public void setId(int id) {
 		this.id = id;
+	}
+	@Override
+	public int compareTo(Contributor c ) {
+		return this.username.compareTo(c.getUsername());
 	}
 	
 	

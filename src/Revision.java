@@ -14,6 +14,7 @@ public class Revision {
 	private Text text;
 	private Page page;
 	
+	/////SOME REVISIONS HAVE AN IP ADDRESS INSTEAD OF A USER AS A CONTRIBUTOR !!! HANDLE
 	
 	
 	public Page getPage() {

@@ -97,7 +97,7 @@ public class Wiki {
 		this.lang = lang;
 	}
 	
-	public static TreeMap<LocalTime,List<Revision>> groupRevisionsByHour(){
+	public TreeMap<LocalTime,List<Revision>> groupRevisionsByHour(){
 		List<Revision> revisions = getAllRevisions();
 		TreeMap<LocalTime,List<Revision> > map = new TreeMap<LocalTime,List<Revision>>();
 		List<Revision> monthlyRevisions;
@@ -112,12 +112,13 @@ public class Wiki {
 			if(map.containsKey(localTime)){
 				monthlyRevisions = map.get(localTime);
 				monthlyRevisions.add(r);
-				map.put(localTime, monthlyRevisions);
+				
 			}
 			else{
-				map.put(localTime, new LinkedList<Revision>());
+				monthlyRevisions = new LinkedList<Revision>();
+				monthlyRevisions.add(r);
 			}
-			
+			map.put(localTime, monthlyRevisions);
 		}
 		
 		return map;
@@ -125,7 +126,7 @@ public class Wiki {
 		
 	}
 	
-	public static TreeMap<YearMonth,List<Revision>> groupRevisionsByMonth(){
+	public TreeMap<YearMonth,List<Revision>> groupRevisionsByMonth(){
 		List<Revision> revisions = getAllRevisions();
 		TreeMap<YearMonth,List<Revision> > map = new TreeMap<YearMonth,List<Revision>>();
 		List<Revision> monthlyRevisions;
@@ -139,23 +140,25 @@ public class Wiki {
 			if(map.containsKey(yearMonth)){
 				monthlyRevisions = map.get(yearMonth);
 				monthlyRevisions.add(r);
-				map.put(yearMonth, monthlyRevisions);
 			}
 			else{
-				map.put(yearMonth, new LinkedList<Revision>());
+				monthlyRevisions = new LinkedList<Revision>();
+				monthlyRevisions.add(r);
 			}
-			
+			map.put(yearMonth, new LinkedList<Revision>());
+
 		}
 		
 		return map;
 		
 	}
 	
-	private List<Revision> getRevisionsByDate(){
+	public List<Revision> getRevisionsByDate(){
 		List<Revision> revisions = getAllRevisions();
 		sortRevisionsByDate(revisions);
 		return revisions;
 	}
+	
 	private static void sortRevisionsByDate(List<Revision> revisions){
 		
 		Collections.sort(revisions, new Comparator<Revision>(){
@@ -169,7 +172,7 @@ public class Wiki {
 		});
 	}
 	
-	public static List<Revision> getAllRevisions(){
+	public List<Revision> getAllRevisions(){
 		List<Revision> revisions = new LinkedList<Revision>();
 		for(Page p : getPages())
 			revisions.addAll(p.getRevisions());
@@ -178,10 +181,31 @@ public class Wiki {
 		
 	}
 	
-	public static List<Page> getPages(int ns){
+	public static List<Page> getPagesByNs(int ns){
 		List<Page> pages = getPages();
 		Predicate<Page> predicate = p-> p.getNs() != ns;
 		pages.removeIf(predicate);
 		return pages;
+	}
+	
+	public TreeMap<Contributor,List<Revision>> getEditors(){
+		TreeMap<Contributor,List<Revision>> editors = new TreeMap<Contributor,List<Revision>>();
+		Contributor contributor;
+		List<Revision> revisions;
+		for(Revision r : getAllRevisions()){
+			contributor = r.getContributor();
+			if(contributor.getUsername()!= null){
+				if(editors.containsKey(contributor)){
+					revisions=editors.get(contributor);
+					revisions.add(r);
+				}
+				else{
+					revisions = new LinkedList<Revision>();
+					revisions.add(r);
+				}
+				editors.put(contributor,revisions);
+			}
+		}
+		return editors;
 	}
 }
